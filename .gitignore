@@ -1,2 +1,4 @@
 .DS_Store
 backend/sqlite/*.sqlite
+frontend/test-results/
+jmeter.log
