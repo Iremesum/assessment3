@@ -8,8 +8,14 @@ services:
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
 
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: assessment3-zipkin
+    ports:
+      - "9411:9411"
+
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.157.0
+    image: otel/opentelemetry-collector-contrib:0.158.0
     container_name: assessment3-otel-collector
     command:
       - "--config=/etc/otelcol-contrib/config.yaml"
@@ -18,5 +24,19 @@ services:
     ports:
       - "4317:4317"
       - "4318:4318"
+      - "8888:8888"
     depends_on:
       - jaeger
+      - zipkin
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: assessment3-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - otel-collector

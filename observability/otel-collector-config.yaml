@@ -1,22 +1,38 @@
-services:
-  jaeger:
-    image: jaegertracing/all-in-one:1.76.0
-    container_name: assessment3-jaeger
-    ports:
-      - "16686:16686"
-      - "4317"
-    environment:
-      COLLECTOR_OTLP_ENABLED: "true"
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.157.0
-    container_name: assessment3-otel-collector
-    command:
-      - "--config=/etc/otelcol-contrib/config.yaml"
-    volumes:
-      - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
-    ports:
-      - "4317:4317"
-      - "4318:4318"
-    depends_on:
-      - jaeger
+processors:
+  batch:
+
+exporters:
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+
+  zipkin:
+    endpoint: http://zipkin:9411/api/v2/spans
+
+  debug:
+    verbosity: basic
+
+service:
+  telemetry:
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/jaeger, zipkin, debug]
