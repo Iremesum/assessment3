@@ -2,39 +2,61 @@
 
 import { useEffect, useState } from "react";
 
-const APIURL = "http://3.218.151.177:4080" ;
+const APIURL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-interface Post {
-  id: number;
+interface RSSItem {
+  id: string;
   title: string;
   author: string;
-  content: string;
   summary: string;
-  imageUrl: string | null;
-  link: string | null;
-  status: "published" | "draft";
-  createdAt: string;
+  link: string;
+  pubDate: string;
 }
 
 export default function Feeds() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<RSSItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${APIURL}/api/feed`);
-      if (res.ok) {
-        const data = await res.json();
-        setPosts(data);
-        setError("");
-      } else {
-        setError("Failed to load feed from server.");
+
+      const res = await fetch(`${APIURL}/api/rss`);
+
+      if (!res.ok) {
+        setError("Failed to load RSS feed from server.");
+        return;
       }
+
+      const xmlText = await res.text();
+
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(xmlText, "application/xml");
+
+      const parserError = xml.querySelector("parsererror");
+
+      if (parserError) {
+        setError("Invalid RSS feed received from server.");
+        return;
+      }
+
+      const items = Array.from(xml.querySelectorAll("item"));
+
+      const parsedPosts: RSSItem[] = items.map((item) => ({
+        id: item.querySelector("guid")?.textContent || "",
+        title: item.querySelector("title")?.textContent || "",
+        author: item.querySelector("author")?.textContent || "",
+        summary: item.querySelector("description")?.textContent || "",
+        link: item.querySelector("link")?.textContent || "",
+        pubDate: item.querySelector("pubDate")?.textContent || "",
+      }));
+
+      setPosts(parsedPosts);
+      setError("");
     } catch (err) {
-      console.error("Error fetching posts:", err);
+      console.error("Error fetching RSS feed:", err);
       setError("Could not connect to the RSS Server.");
     } finally {
       setLoading(false);
@@ -45,15 +67,14 @@ export default function Feeds() {
     fetchPosts();
   }, []);
 
-  const toggleExpand = (id: number) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
-
   return (
     <div className="p-8">
-      <h2 className="text-2xl font-bold mb-6">Feeds / Announcements</h2>
+      <h2 className="text-2xl font-bold mb-6">
+        Feeds / Announcements
+      </h2>
+
       <p className="text-sm text-gray-500 mb-4">
-        Live data fetched from the RSS Server backend
+        Live RSS XML data fetched from the RSS Server backend
       </p>
 
       <button
@@ -64,46 +85,53 @@ export default function Feeds() {
       </button>
 
       {loading && <p>Loading feed...</p>}
-      {error && <p className="text-red-600">{error}</p>}
+
+      {error && (
+        <p className="text-red-600">
+          {error}
+        </p>
+      )}
+
       {!loading && !error && posts.length === 0 && (
-        <p className="text-gray-500">No posts available yet.</p>
+        <p className="text-gray-500">
+          No posts available yet.
+        </p>
       )}
 
       <div className="grid gap-4">
-        {posts.map((post) => {
-          const isExpanded = expandedId === post.id;
-          return (
-            <div
-              key={post.id}
-              className="border-2 rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-lg hover:border-[#A6192E] hover:bg-red-50 hover:-translate-y-1"
-            >
-              <h3 className="text-lg font-semibold">{post.title}</h3>
-              <p className="text-sm text-gray-500">
-                {new Date(post.createdAt).toLocaleDateString()} · Posted by {post.author} ·{" "}
-                <strong>{post.status}</strong>
-              </p>
+        {posts.map((post) => (
+          <div
+            key={post.id}
+            className="border-2 rounded-lg p-4 shadow-sm transition-all duration-200 hover:shadow-lg hover:border-[#A6192E] hover:bg-red-50 hover:-translate-y-1"
+          >
+            <h3 className="text-lg font-semibold">
+              {post.title}
+            </h3>
 
-              {post.imageUrl && (
-                <img
-                  src={post.imageUrl}
-                  alt={post.title}
-                  className="w-full h-40 object-cover rounded mt-2"
-                />
-              )}
+            <p className="text-sm text-gray-500">
+              {post.pubDate
+                ? new Date(post.pubDate).toLocaleDateString()
+                : "No date"}
+              {" · "}
+              Posted by {post.author || "Unknown"}
+            </p>
 
-              <p className="mt-2">{post.summary}</p>
+            <p className="mt-2">
+              {post.summary}
+            </p>
 
-              {isExpanded && <p className="mt-2 text-gray-700">{post.content}</p>}
-
-              <button
-                onClick={() => toggleExpand(post.id)}
-                className="text-[#A6192E] underline mt-2"
+            {post.link && (
+              <a
+                href={post.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#A6192E] underline mt-2 inline-block"
               >
-                {isExpanded ? "Show less ▲" : "Show more ▼"}
-              </button>
-            </div>
-          );
-        })}
+                Read more
+              </a>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
