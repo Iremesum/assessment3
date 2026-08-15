@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import { sequelize } from '@/app/lib/sequelize';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+}
+
 export async function GET() {
   const startTime = Date.now();
 
@@ -13,7 +26,10 @@ export async function GET() {
         database: 'connected',
         responseTimeMs: Date.now() - startTime,
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: corsHeaders,
+      }
     );
   } catch (error) {
     console.error('Health check failed:', error);
@@ -24,7 +40,10 @@ export async function GET() {
         database: 'disconnected',
         responseTimeMs: Date.now() - startTime,
       },
-      { status: 503 }
+      {
+        status: 503,
+        headers: corsHeaders,
+      }
     );
   }
 }
