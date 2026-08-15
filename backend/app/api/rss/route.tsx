@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { Post } from '@/app/lib/sequelize';
 import { logRequest } from '@/app/lib/requestLogger';
+import { trace, SpanStatusCode } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('assessment3-backend');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,17 +28,20 @@ export async function OPTIONS() {
 }
 
 export async function GET() {
-  const startTime = Date.now();
+  return tracer.startActiveSpan('GET /api/rss', async (span) => {
+    const startTime = Date.now();
 
-  try {
-    const posts = await Post.findAll({
-      where: { status: 'published' },
-      order: [['createdAt', 'DESC']],
-    });
+    try {
+      const posts = await Post.findAll({
+        where: { status: 'published' },
+        order: [['createdAt', 'DESC']],
+      });
 
-    const items = posts
-      .map(
-        (post) => `
+      span.setAttribute('rss.post_count', posts.length);
+
+      const items = posts
+        .map(
+          (post) => `
     <item>
       <title>${escapeXml(post.title)}</title>
       <description>${escapeXml(post.summary)}</description>
@@ -44,10 +50,10 @@ export async function GET() {
       <pubDate>${post.createdAt.toUTCString()}</pubDate>
       <guid>${post.id}</guid>
     </item>`
-      )
-      .join('');
+        )
+        .join('');
 
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>RSS Server Feed</title>
@@ -58,31 +64,48 @@ export async function GET() {
   </channel>
 </rss>`;
 
-    await logRequest({
-      endpoint: '/api/rss',
-      statusCode: 200,
-      responseTimeMs: Date.now() - startTime,
-    });
+      const responseTimeMs = Date.now() - startTime;
 
-    return new NextResponse(xml, {
-      status: 200,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/rss+xml; charset=utf-8',
-      },
-    });
-  } catch (error) {
-    console.error(error);
+      await logRequest({
+        endpoint: '/api/rss',
+        statusCode: 200,
+        responseTimeMs,
+      });
 
-    await logRequest({
-      endpoint: '/api/rss',
-      statusCode: 500,
-      responseTimeMs: Date.now() - startTime,
-    });
+      span.setAttribute('http.response_time_ms', responseTimeMs);
 
-    return new NextResponse('Server error', {
-      status: 500,
-      headers: corsHeaders,
-    });
-  }
+      return new NextResponse(xml, {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/rss+xml; charset=utf-8',
+        },
+      });
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof Error) {
+        span.recordException(error);
+      }
+
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message:
+          error instanceof Error ? error.message : 'Unknown error',
+      });
+
+      await logRequest({
+        endpoint: '/api/rss',
+        statusCode: 500,
+        responseTimeMs: Date.now() - startTime,
+      });
+
+      return new NextResponse('Server error', {
+        status: 500,
+        headers: corsHeaders,
+      });
+    } finally {
+      span.end();
+    }
+  });
 }

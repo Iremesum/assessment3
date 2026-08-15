@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { Op, fn, col } from 'sequelize';
 import { RequestLog } from '@/app/lib/sequelize';
+import { trace, SpanStatusCode } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('assessment3-backend');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,51 +19,83 @@ export async function OPTIONS() {
 }
 
 export async function GET() {
-  try {
-    const totalRequests = await RequestLog.count();
+  return tracer.startActiveSpan('GET /api/count', async (span) => {
+    const startTime = Date.now();
 
-    const failedRequests = await RequestLog.count({
-      where: {
-        statusCode: {
-          [Op.gte]: 400,
+    try {
+      const totalRequests = await RequestLog.count();
+
+      const failedRequests = await RequestLog.count({
+        where: {
+          statusCode: {
+            [Op.gte]: 400,
+          },
         },
-      },
-    });
+      });
 
-    const uniqueClients = await RequestLog.count({
-      distinct: true,
-      col: 'clientId',
-      where: {
-        clientId: {
-          [Op.ne]: null,
+      const uniqueClients = await RequestLog.count({
+        distinct: true,
+        col: 'clientId',
+        where: {
+          clientId: {
+            [Op.ne]: null,
+          },
         },
-      },
-    });
+      });
 
-    const averageResponse = await RequestLog.findOne({
-      attributes: [[fn('AVG', col('responseTimeMs')), 'averageResponseTimeMs']],
-      raw: true,
-    });
+      const averageResponse = await RequestLog.findOne({
+        attributes: [
+          [fn('AVG', col('responseTimeMs')), 'averageResponseTimeMs'],
+        ],
+        raw: true,
+      });
 
-    return NextResponse.json(
-      {
-        totalRequests,
-        failedRequests,
-        uniqueClients,
-        averageResponseTimeMs: Number(
-          averageResponse?.averageResponseTimeMs ?? 0
-        ),
-      },
-      {
-        headers: corsHeaders,
+      const averageResponseTimeMs = Number(
+        averageResponse?.averageResponseTimeMs ?? 0
+      );
+
+      span.setAttribute('metrics.total_requests', totalRequests);
+      span.setAttribute('metrics.failed_requests', failedRequests);
+      span.setAttribute('metrics.unique_clients', uniqueClients);
+      span.setAttribute(
+        'metrics.average_response_time_ms',
+        averageResponseTimeMs
+      );
+      span.setAttribute(
+        'http.response_time_ms',
+        Date.now() - startTime
+      );
+
+      return NextResponse.json(
+        {
+          totalRequests,
+          failedRequests,
+          uniqueClients,
+          averageResponseTimeMs,
+        },
+        {
+          headers: corsHeaders,
+        }
+      );
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof Error) {
+        span.recordException(error);
       }
-    );
-  } catch (error) {
-    console.error(error);
 
-    return new NextResponse('Server error', {
-      status: 500,
-      headers: corsHeaders,
-    });
-  }
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message:
+          error instanceof Error ? error.message : 'Unknown error',
+      });
+
+      return new NextResponse('Server error', {
+        status: 500,
+        headers: corsHeaders,
+      });
+    } finally {
+      span.end();
+    }
+  });
 }
