@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RSS Server + LMS — Assessment 2
 
-## Getting Started
+**GitHub Repository:** https://github.com/Iremesum/assessment2
 
-First, run the development server:
+Assessment 2 for CSE5006 Cloud Web Applications — extends the Assessment 1
+frontend with a full backend: a database, CRUD API, operational monitoring
+endpoints, a validated RSS feed, and Docker-based deployment.
 
-```bash
+## Architecture
+
+This project has two separate applications:
+
+- **`api/`** — the RSS Server: handles the database, CRUD API routes, and
+  operational endpoints. Built with Next.js and Sequelize.
+- **`frontend/`** — the RSS Client: the user-facing website, extended from
+  Assessment 1, which fetches and displays live data from the RSS Server.
+
+Both run as separate Docker containers, connected via `docker-compose.yml`,
+alongside a small container that holds the shared SQLite database volume.
+
+## Features
+
+- **Database**: SQLite, managed via the Sequelize ORM. A `Post` model stores
+  title, author, content, summary, an optional image, an optional link, and
+  a published/draft status.
+- **CRUD API** (`/api/feed`): full Create, Read, Update, and Delete support.
+- **Operational endpoints**: `/api/health` (server status) and `/api/count`
+  (request tracking).
+- **RSS feed** (`/api/rss`): outputs a W3C-validated RSS 2.0 feed.
+- **RSS Client**: the frontend, reusing Assessment 1's Header, Navbar,
+  Footer, Breadcrumbs, and theme toggle, now pulling live data from the
+  backend instead of localStorage.
+- **Dockerized**: both apps run in separate containers, orchestrated via
+  Docker Compose.
+- **Deployed**: runs live on an AWS EC2 instance.
+
+## Getting Started (local development)
+
+Each app needs its own dependencies installed and run separately:
+
+\`\`\`bash
+cd api
+npm install
+npx sequelize-cli db:migrate
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+\`\`\`bash
+cd frontend
+npm install
+npm run dev -- -p 3001
+\`\`\`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Or run both together via Docker:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+\`\`\`bash
+docker-compose build --no-cache
+docker-compose up
+\`\`\`
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+- `api/app/lib/sequelize.tsx` — database connection and Post model
+- `api/app/api/feed/route.tsx` — CRUD API route
+- `api/app/api/health/route.tsx` — health check endpoint
+- `api/app/api/count/route.tsx` — request count endpoint
+- `api/app/api/rss/route.tsx` — RSS XML feed endpoint
+- `frontend/app/feeds/page.tsx` — RSS Client, fetches live data from the API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Author
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Name: Irem Ercan Sumer — Student Number: 22591527

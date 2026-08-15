@@ -24,3 +24,72 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+[data-theme="dark"] {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] body {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] a {
+  color: #93c5fd;
+}
+
+/* Fix feed card hover visibility in dark mode.
+   The default hover uses a light blue background, which is hard to read
+   against dark mode text. This overrides it with dark-friendly colours. */
+[data-theme="dark"] .border-2:hover {
+  background-color: #1f2937;
+  border-color: #A6192E;
+}
+
+[data-theme="dark"] .border-2 h3,
+[data-theme="dark"] .border-2 p {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .border-2 button,
+[data-theme="dark"] .border-2 a {
+  color: #ff6b7a;
+}
+
+[data-theme="dark"] .border-2 button:hover,
+[data-theme="dark"] .border-2 a:hover {
+  color: #ff8a96;
+}
+[data-theme="dark"] .bg-gray-900 {
+  background-color: #374151;
+  border: 1px solid #6b7280;
+}
+
+[data-theme="dark"] .bg-gray-900:hover {
+  background-color: #4b5563;
+}
+
+[data-theme="dark"] form.bg-gray-50 {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme="dark"] form.bg-gray-50 label {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] form input,
+[data-theme="dark"] form textarea {
+  background-color: #374151;
+  color: #f3f4f6;
+  border-color: #6b7280;
+}
+/* Keep navbar links white in dark mode, overriding the general dark-mode link color */
+[data-theme="dark"] nav a {
+  color: #ffffff;
+}
+
+[data-theme="dark"] nav a:hover {
+  color: #ffffff;
+}
