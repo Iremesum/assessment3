@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
 import { Post } from '@/app/lib/sequelize';
+import { logRequest } from '@/app/lib/requestLogger';
 
-// Escapes special XML characters so content doesn't break the XML structure
-function escapeXml(unsafe: string): string {
-  return unsafe
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+function escapeXml(value: string) {
+  return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -11,28 +17,37 @@ function escapeXml(unsafe: string): string {
     .replace(/'/g, '&apos;');
 }
 
-export async function GET() {
-  const posts = await Post.findAll({
-    where: { status: 'published' },
-    order: [['createdAt', 'DESC']],
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders,
   });
+}
 
-  const items = posts
-    .map((post) => {
-      const p = post.toJSON() as any;
-      return `
+export async function GET() {
+  const startTime = Date.now();
+
+  try {
+    const posts = await Post.findAll({
+      where: { status: 'published' },
+      order: [['createdAt', 'DESC']],
+    });
+
+    const items = posts
+      .map(
+        (post) => `
     <item>
-      <title>${escapeXml(p.title)}</title>
-      <link>${escapeXml(p.link || 'http://3.218.151.177')}</link>
-      <description>${escapeXml(p.summary)}</description>
-      <author>noreply@rss-server.com (${escapeXml(p.author)})</author>
-      <pubDate>${new Date(p.createdAt).toUTCString()}</pubDate>
-      <guid isPermaLink="false">${p.id}</guid>
-    </item>`;
-    })
-    .join('');
+      <title>${escapeXml(post.title)}</title>
+      <description>${escapeXml(post.summary)}</description>
+      <author>${escapeXml(post.author)}</author>
+      <link>${escapeXml(post.link || '')}</link>
+      <pubDate>${post.createdAt.toUTCString()}</pubDate>
+      <guid>${post.id}</guid>
+    </item>`
+      )
+      .join('');
 
-  const rssFeed = `<?xml version="1.0" encoding="UTF-8"?>
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>RSS Server Feed</title>
@@ -43,10 +58,31 @@ export async function GET() {
   </channel>
 </rss>`;
 
-  return new NextResponse(rssFeed, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/rss+xml; charset=utf-8',
-    },
-  });
+    await logRequest({
+      endpoint: '/api/rss',
+      statusCode: 200,
+      responseTimeMs: Date.now() - startTime,
+    });
+
+    return new NextResponse(xml, {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/rss+xml; charset=utf-8',
+      },
+    });
+  } catch (error) {
+    console.error(error);
+
+    await logRequest({
+      endpoint: '/api/rss',
+      statusCode: 500,
+      responseTimeMs: Date.now() - startTime,
+    });
+
+    return new NextResponse('Server error', {
+      status: 500,
+      headers: corsHeaders,
+    });
+  }
 }
