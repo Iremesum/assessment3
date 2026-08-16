@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
+const FRONTEND_URL =
+  process.env.FRONTEND_URL || 'http://localhost:3001';
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'http://localhost:3001',
+  'Access-Control-Allow-Origin': FRONTEND_URL,
   'Access-Control-Allow-Credentials': 'true',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
