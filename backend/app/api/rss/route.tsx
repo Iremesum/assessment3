@@ -5,6 +5,9 @@ import { trace, SpanStatusCode } from '@opentelemetry/api';
 
 const tracer = trace.getTracer('assessment3-backend');
 
+const BASE_URL =
+  process.env.PUBLIC_BASE_URL || 'http://localhost:3000';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -57,9 +60,9 @@ export async function GET() {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>RSS Server Feed</title>
-    <link>http://3.218.151.177</link>
+    <link>${BASE_URL}</link>
     <description>RSS feed for the LMS project</description>
-    <atom:link href="http://3.218.151.177:4080/api/rss" rel="self" type="application/rss+xml" />
+    <atom:link href="${BASE_URL}/api/rss" rel="self" type="application/rss+xml" />
     ${items}
   </channel>
 </rss>`;

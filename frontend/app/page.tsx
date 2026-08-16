@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AuthStatus from "./components/AuthStatus";
 
 const APIURL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
@@ -67,14 +68,18 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#F6F8FA] p-8">
-      <div className="mb-8">
-        <h2 className="mb-2 text-3xl font-bold text-[#172033]">
-          RSS Server Dashboard
-        </h2>
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h2 className="mb-2 text-3xl font-bold text-[#172033]">
+            RSS Server Dashboard
+          </h2>
 
-        <p className="text-[#52606D]">
-          Live operational information from the RSS Server.
-        </p>
+          <p className="text-[#52606D]">
+            Live operational information from the RSS Server.
+          </p>
+        </div>
+
+        <AuthStatus />
       </div>
 
       {error && (
@@ -201,7 +206,9 @@ export default function Home() {
                     </td>
 
                     <td className="p-3 text-[#52606D]">
-                      {new Date(request.requestedAt).toLocaleString()}
+                      {new Date(
+                        request.requestedAt
+                      ).toLocaleString()}
                     </td>
                   </tr>
                 ))}

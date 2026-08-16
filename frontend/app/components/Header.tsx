@@ -4,7 +4,7 @@
 export default function Header() {
   return (
     <header className="bg-gray-900 text-white p-4">
-      <h1 className="text-xl font-bold">Assessment 1 - RSS Server Frontend</h1>
+      <h1 className="text-xl font-bold">CSE5006 Assessment - RSS Server Frontend</h1>
     </header>
   );
 }

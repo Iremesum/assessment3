@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Post } from '@/app/lib/sequelize';
+import { getAuthenticatedUser } from '@/app/lib/auth';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'http://localhost:3001',
+  'Access-Control-Allow-Credentials': 'true',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
@@ -52,6 +54,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getAuthenticatedUser();
+
+    if (!user || user.role !== 'admin') {
+      return new NextResponse('Unauthorized', {
+        status: 401,
+        headers: corsHeaders,
+      });
+    }
+
     const {
       title,
       author,
@@ -96,6 +107,15 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const user = await getAuthenticatedUser();
+
+    if (!user || user.role !== 'admin') {
+      return new NextResponse('Unauthorized', {
+        status: 401,
+        headers: corsHeaders,
+      });
+    }
+
     const id = request.nextUrl.searchParams.get('id');
 
     if (!id) {
@@ -149,6 +169,15 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const user = await getAuthenticatedUser();
+
+    if (!user || user.role !== 'admin') {
+      return new NextResponse('Unauthorized', {
+        status: 401,
+        headers: corsHeaders,
+      });
+    }
+
     const id = request.nextUrl.searchParams.get('id');
 
     if (!id) {
