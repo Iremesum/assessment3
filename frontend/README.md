@@ -1,72 +1,134 @@
-# RSS Server + LMS — Assessment 2
+# RSS Server + LMS Frontend
 
-**GitHub Repository:** https://github.com/Iremesum/assessment2
+Assessment 3 for CSE5006 Cloud Web Applications.
 
-Assessment 2 for CSE5006 Cloud Web Applications — extends the Assessment 1
-frontend with a full backend: a database, CRUD API, operational monitoring
-endpoints, a validated RSS feed, and Docker-based deployment.
+This project is the third stage of a multi-assessment RSS Server project. It began as a frontend-only application and was later extended with a backend API, database persistence, authentication, observability, testing, and Docker deployment.
+
+## Project Progression
+
+### Assessment 1
+Focused on frontend design, usability, and accessibility.
+
+Main features:
+- Next.js / React frontend
+- Responsive navigation
+- Light/dark theme
+- Announcement cards and search
+- Create, edit, and delete announcements
+- localStorage persistence
+- Dynamic `/feeds/[id]` pages
+
+### Assessment 2
+Introduced the backend and database layer.
+
+Main additions:
+- Next.js backend API
+- SQLite database
+- Sequelize ORM
+- CRUD API endpoints
+- RSS XML generation
+- Docker deployment
+- Health and request-count endpoints
+
+### Assessment 3
+Extends the system with:
+- Authenticated Create/Edit/Delete
+- JWT authentication using HTTP-only cookies
+- Persistent request logging
+- Real database health checks
+- Operational dashboard
+- OpenTelemetry instrumentation
+- Jaeger and Zipkin tracing
+- Prometheus metrics
+- Playwright end-to-end testing
+- JMeter load testing
+- Lighthouse testing
+- Production Docker configuration
+- AWS EC2 deployment
 
 ## Architecture
 
-This project has two separate applications:
+Browser
+↓
+Frontend
+↓
+Backend API
+↓
+Sequelize
+↓
+SQLite
 
-- **`api/`** — the RSS Server: handles the database, CRUD API routes, and
-  operational endpoints. Built with Next.js and Sequelize.
-- **`frontend/`** — the RSS Client: the user-facing website, extended from
-  Assessment 1, which fetches and displays live data from the RSS Server.
+Published posts are also exposed as RSS:
 
-Both run as separate Docker containers, connected via `docker-compose.yml`,
-alongside a small container that holds the shared SQLite database volume.
+SQLite → `/api/rss` → RSS XML → LMS / RSS Client
 
-## Features
+## Frontend
 
-- **Database**: SQLite, managed via the Sequelize ORM. A `Post` model stores
-  title, author, content, summary, an optional image, an optional link, and
-  a published/draft status.
-- **CRUD API** (`/api/feed`): full Create, Read, Update, and Delete support.
-- **Operational endpoints**: `/api/health` (server status) and `/api/count`
-  (request tracking).
-- **RSS feed** (`/api/rss`): outputs a W3C-validated RSS 2.0 feed.
-- **RSS Client**: the frontend, reusing Assessment 1's Header, Navbar,
-  Footer, Breadcrumbs, and theme toggle, now pulling live data from the
-  backend instead of localStorage.
-- **Dockerized**: both apps run in separate containers, orchestrated via
-  Docker Compose.
-- **Deployed**: runs live on an AWS EC2 instance.
+Built with Next.js, React, TypeScript, and Tailwind CSS.
 
-## Getting Started (local development)
+Main features include:
+- Operational dashboard
+- RSS announcement list
+- Search and expand/collapse
+- Full announcement pages
+- Login/logout
+- Authenticated create/edit/delete
 
-Each app needs its own dependencies installed and run separately:
+## Backend
 
-\`\`\`bash
-cd api
+Built with Next.js API routes and TypeScript.
+
+The backend handles:
+- CRUD operations
+- Authentication
+- RSS XML generation
+- SQLite access through Sequelize
+- Health checks
+- Request logging and metrics
+- OpenTelemetry tracing
+
+## Testing and Observability
+
+Playwright is used for end-to-end testing, including:
+
+Login → Create → Edit → Delete
+
+JMeter is used for RSS load testing. A 10,000-request test completed with 0% HTTP errors, although response time increased under heavy load.
+
+Lighthouse dashboard scores improved from:
+- Performance: 98 → 100
+- Accessibility: 94 → 98
+- Best Practices: 100
+- SEO: 100
+
+OpenTelemetry instruments important API requests. Jaeger and Zipkin are used for tracing, while Prometheus is used for metrics.
+
+## Running Locally
+
+Backend:
+
+cd backend
 npm install
-npx sequelize-cli db:migrate
 npm run dev
-\`\`\`
 
-\`\`\`bash
+Frontend:
+
 cd frontend
 npm install
 npm run dev -- -p 3001
-\`\`\`
 
-Or run both together via Docker:
+Frontend: http://localhost:3001
+Backend: http://localhost:3000
 
-\`\`\`bash
-docker-compose build --no-cache
-docker-compose up
-\`\`\`
+## Docker and Deployment
 
-## Project Structure
+Build and start:
 
-- `api/app/lib/sequelize.tsx` — database connection and Post model
-- `api/app/api/feed/route.tsx` — CRUD API route
-- `api/app/api/health/route.tsx` — health check endpoint
-- `api/app/api/count/route.tsx` — request count endpoint
-- `api/app/api/rss/route.tsx` — RSS XML feed endpoint
-- `frontend/app/feeds/page.tsx` — RSS Client, fetches live data from the API
+docker compose build
+docker compose up -d
 
-## Author
+Frontend runs on port 3001 and backend on port 3000.
 
-Name: Irem Ercan Sumer — Student Number: 22591527
+SQLite uses a persistent Docker volume.
+
+The final application is deployed to AWS EC2. Environment variables are used for frontend and backend URLs so the deployed application does not depend on localhost.
