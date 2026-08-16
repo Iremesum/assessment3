@@ -51,13 +51,9 @@ export default function Home() {
         throw new Error("Failed to load dashboard data");
       }
 
-      const healthData = await healthResponse.json();
-      const metricsData = await metricsResponse.json();
-      const requestsData = await requestsResponse.json();
-
-      setHealth(healthData);
-      setMetrics(metricsData);
-      setRequests(requestsData);
+      setHealth(await healthResponse.json());
+      setMetrics(await metricsResponse.json());
+      setRequests(await requestsResponse.json());
       setError("");
     } catch (err) {
       console.error("Dashboard error:", err);
@@ -70,109 +66,111 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="p-8">
+    <div className="min-h-screen bg-[#F6F8FA] p-8">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-2">
+        <h2 className="mb-2 text-3xl font-bold text-[#172033]">
           RSS Server Dashboard
         </h2>
 
-        <p className="text-gray-500">
+        <p className="text-[#52606D]">
           Live operational information from the RSS Server.
         </p>
       </div>
 
       {error && (
-        <p className="text-red-600 mb-6">
-          {error}
-        </p>
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="text-red-700">{error}</p>
+        </div>
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="border rounded-lg p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-2">
-            Server Health
-          </p>
-
-          <p className="text-2xl font-bold">
-            {health?.status === "ok"
-              ? "Healthy"
-              : "Unavailable"}
+        <DashboardCard title="Server Health">
+          <p
+            className={`text-2xl font-bold ${
+              health?.status === "ok"
+                ? "text-emerald-700"
+                : "text-red-700"
+            }`}
+          >
+            {health?.status === "ok" ? "Healthy" : "Unavailable"}
           </p>
 
           {health && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="mt-2 text-sm text-[#52606D]">
               Database: {health.database}
             </p>
           )}
-        </div>
+        </DashboardCard>
 
-        <div className="border rounded-lg p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-2">
-            Total Requests
-          </p>
-
-          <p className="text-2xl font-bold">
+        <DashboardCard title="Total Requests">
+          <p className="text-2xl font-bold text-[#172033]">
             {metrics?.totalRequests ?? 0}
           </p>
-        </div>
+        </DashboardCard>
 
-        <div className="border rounded-lg p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-2">
-            Failed Requests
-          </p>
-
-          <p className="text-2xl font-bold">
+        <DashboardCard title="Failed Requests">
+          <p
+            className={`text-2xl font-bold ${
+              (metrics?.failedRequests ?? 0) > 0
+                ? "text-red-700"
+                : "text-[#172033]"
+            }`}
+          >
             {metrics?.failedRequests ?? 0}
           </p>
-        </div>
+        </DashboardCard>
 
-        <div className="border rounded-lg p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-2">
-            Average Response Time
-          </p>
-
-          <p className="text-2xl font-bold">
+        <DashboardCard title="Average Response Time">
+          <p className="text-2xl font-bold text-[#172033]">
             {metrics
               ? `${metrics.averageResponseTimeMs.toFixed(1)} ms`
               : "0 ms"}
           </p>
-        </div>
+        </DashboardCard>
       </div>
 
-      <div className="mt-6 border rounded-lg p-5 shadow-sm">
-        <p className="text-sm text-gray-500 mb-2">
+      <div className="mt-6 rounded-xl border border-[#D9E1E8] bg-white p-5 shadow-sm">
+        <p className="mb-2 text-sm font-medium text-[#52606D]">
           Unique Clients
         </p>
 
-        <p className="text-2xl font-bold">
+        <p className="text-2xl font-bold text-[#172033]">
           {metrics?.uniqueClients ?? 0}
         </p>
       </div>
 
-      <div className="mt-8 border rounded-lg shadow-sm overflow-hidden">
-        <div className="p-5 border-b">
-          <h3 className="text-lg font-semibold">
+      <div className="mt-8 overflow-hidden rounded-xl border border-[#D9E1E8] bg-white shadow-sm">
+        <div className="border-b border-[#D9E1E8] p-5">
+          <h3 className="text-lg font-semibold text-[#172033]">
             Recent Requests
           </h3>
 
-          <p className="text-sm text-gray-500">
+          <p className="mt-1 text-sm text-[#52606D]">
             Latest requests recorded by the RSS Server.
           </p>
         </div>
 
         {requests.length === 0 ? (
-          <p className="p-5 text-gray-500">
+          <p className="p-5 text-[#52606D]">
             No requests recorded yet.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="border-b">
+              <thead className="bg-[#EEF3F7]">
                 <tr>
-                  <th className="p-3">Endpoint</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Response Time</th>
-                  <th className="p-3">Date</th>
+                  <th className="p-3 text-sm font-semibold text-[#334155]">
+                    Endpoint
+                  </th>
+                  <th className="p-3 text-sm font-semibold text-[#334155]">
+                    Status
+                  </th>
+                  <th className="p-3 text-sm font-semibold text-[#334155]">
+                    Response Time
+                  </th>
+                  <th className="p-3 text-sm font-semibold text-[#334155]">
+                    Date
+                  </th>
                 </tr>
               </thead>
 
@@ -180,24 +178,30 @@ export default function Home() {
                 {requests.map((request) => (
                   <tr
                     key={request.id}
-                    className="border-b last:border-b-0"
+                    className="border-t border-[#E6EBF0] hover:bg-[#F7FAFC]"
                   >
-                    <td className="p-3">
+                    <td className="p-3 text-[#172033]">
                       {request.endpoint}
                     </td>
 
                     <td className="p-3">
-                      {request.statusCode}
+                      <span
+                        className={`rounded-full px-2 py-1 text-sm font-medium ${
+                          request.statusCode >= 400
+                            ? "bg-red-100 text-red-700"
+                            : "bg-cyan-100 text-cyan-800"
+                        }`}
+                      >
+                        {request.statusCode}
+                      </span>
                     </td>
 
-                    <td className="p-3">
+                    <td className="p-3 text-[#52606D]">
                       {request.responseTimeMs} ms
                     </td>
 
-                    <td className="p-3">
-                      {new Date(
-                        request.requestedAt
-                      ).toLocaleString()}
+                    <td className="p-3 text-[#52606D]">
+                      {new Date(request.requestedAt).toLocaleString()}
                     </td>
                   </tr>
                 ))}
@@ -209,10 +213,28 @@ export default function Home() {
 
       <button
         onClick={loadDashboard}
-        className="mt-6 px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-700 transition-colors"
+        className="mt-6 rounded-lg bg-[#1E3A5F] px-4 py-2 font-medium text-white transition hover:bg-[#172E4D]"
       >
         Refresh Dashboard
       </button>
+    </div>
+  );
+}
+
+function DashboardCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-[#D9E1E8] bg-white p-5 shadow-sm transition hover:border-[#0891B2] hover:shadow-md">
+      <p className="mb-2 text-sm font-medium text-[#52606D]">
+        {title}
+      </p>
+
+      {children}
     </div>
   );
 }
