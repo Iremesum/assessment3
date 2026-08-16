@@ -1,21 +1,17 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('feeds page loads RSS data', async ({ page }) => {
-  await page.goto('http://localhost:3001/feeds');
+test("feeds page loads announcements", async ({ page }) => {
+  await page.goto("http://localhost:3001/feeds");
 
   await expect(
-    page.getByText('Feeds / Announcements')
+    page.getByRole("heading", { name: "Feeds / Announcements" })
   ).toBeVisible();
 
   await expect(
-    page.getByText('Live RSS XML data fetched from the RSS Server backend')
+    page.getByPlaceholder("Search posts...")
   ).toBeVisible();
 
   await expect(
-    page.getByRole('button', { name: 'Refresh Feed' })
-  ).toBeVisible();
-
-  await expect(
-    page.getByText('No posts available yet.')
+    page.getByText("Latest announcements published through the RSS Server.")
   ).toBeVisible();
 });
