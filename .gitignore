@@ -2,3 +2,4 @@
 backend/sqlite/*.sqlite
 frontend/test-results/
 jmeter.log
+cookies.txt
