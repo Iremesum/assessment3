@@ -137,14 +137,14 @@ export default function Feeds() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F6F8FA] p-8">
+      <main className="min-h-screen bg-[#F6F8FA] p-8">
         <p className="text-[#52606D]">Loading announcements...</p>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F8FA] p-8">
+    <main className="min-h-screen bg-[#F6F8FA] p-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-[#172033]">
@@ -322,6 +322,6 @@ export default function Feeds() {
           })}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

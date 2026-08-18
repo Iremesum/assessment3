@@ -172,17 +172,17 @@ export default function PostPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F6F8FA] p-8">
+      <main className="min-h-screen bg-[#F6F8FA] p-8">
         <p className="text-[#52606D]">
           Loading announcement...
         </p>
-      </div>
+      </main>
     );
   }
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-[#F6F8FA] p-8">
+      <main className="min-h-screen bg-[#F6F8FA] p-8">
         <div className="mx-auto max-w-4xl">
           <Link
             href="/feeds"
@@ -195,12 +195,12 @@ export default function PostPage() {
             Announcement not found.
           </p>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F8FA] p-8">
+    <main className="min-h-screen bg-[#F6F8FA] p-8">
       <div className="mx-auto max-w-4xl">
         <Link
           href="/feeds"
@@ -350,6 +350,6 @@ export default function PostPage() {
           </form>
         )}
       </div>
-    </div>
+    </main>
   );
 }
