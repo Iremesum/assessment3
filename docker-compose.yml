@@ -72,5 +72,25 @@ services:
     restart: unless-stopped
 
 
+  caddy:
+    image: caddy:2-alpine
+
+    container_name: assessment3-caddy
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+
+    depends_on:
+      - frontend
+      - backend
+
+    restart: unless-stopped
+
+
 volumes:
   backend_sqlite:
