@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("feeds page loads announcements", async ({ page }) => {
-  await page.goto("http://localhost:3001/feeds");
+  await page.goto("/feeds");
 
   await expect(
     page.getByRole("heading", { name: "Feeds / Announcements" })

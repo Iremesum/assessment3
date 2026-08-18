@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 30_000,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3001",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3001",
     trace: "on-first-retry",
   },
 });

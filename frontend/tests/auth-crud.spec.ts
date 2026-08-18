@@ -4,7 +4,7 @@ test("admin can login, create, edit and delete an announcement", async ({ page }
   const uniqueTitle = `Playwright Announcement ${Date.now()}`;
   const editedTitle = `${uniqueTitle} Edited`;
 
-  await page.goto("http://localhost:3001/login");
+  await page.goto("/login");
 
   await page.getByLabel("Email").fill("admin@example.com");
   await page.getByLabel("Password").fill("MyPassword123!");
