@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const APIURL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("admin@example.com");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -32,6 +35,8 @@ export default function LoginPage() {
       }
 
       setMessage("Login successful.");
+
+      router.push("/feeds");
     } catch (error) {
       console.error(error);
       setMessage("Could not connect to the server.");
