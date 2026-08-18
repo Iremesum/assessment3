@@ -56,7 +56,9 @@ export default function Feeds() {
         credentials: "include",
       });
 
-      setAuthenticated(response.ok);
+      const data = await response.json();
+
+      setAuthenticated(data.authenticated === true);
     } catch {
       setAuthenticated(false);
     }

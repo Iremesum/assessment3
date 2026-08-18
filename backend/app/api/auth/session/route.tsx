@@ -30,7 +30,7 @@ export async function GET() {
         authenticated: false,
       },
       {
-        status: 401,
+        status: 200,
         headers: corsHeaders,
       }
     );
@@ -55,7 +55,7 @@ export async function GET() {
         authenticated: false,
       },
       {
-        status: 401,
+        status: 200,
         headers: corsHeaders,
       }
     );

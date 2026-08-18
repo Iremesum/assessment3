@@ -73,14 +73,13 @@ export default function PostPage() {
 
   async function checkSession() {
     try {
-      const response = await fetch(
-        `${APIURL}/api/auth/session`,
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${APIURL}/api/auth/session`, {
+        credentials: "include",
+      });
 
-      setAuthenticated(response.ok);
+      const data = await response.json();
+
+      setAuthenticated(data.authenticated === true);
     } catch {
       setAuthenticated(false);
     }

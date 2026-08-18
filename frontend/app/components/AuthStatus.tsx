@@ -16,7 +16,9 @@ export default function AuthStatus() {
         credentials: "include",
       });
 
-      setAuthenticated(response.ok);
+      const data = await response.json();
+
+      setAuthenticated(data.authenticated === true);
     } catch (error) {
       console.error("Session check failed:", error);
       setAuthenticated(false);
@@ -43,7 +45,11 @@ export default function AuthStatus() {
   }, []);
 
   if (loading) {
-    return <span className="text-sm text-[#52606D]">Checking session...</span>;
+    return (
+      <span className="text-sm text-[#52606D]">
+        Checking session...
+      </span>
+    );
   }
 
   if (authenticated) {
