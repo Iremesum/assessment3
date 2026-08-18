@@ -5,3 +5,5 @@ jmeter.log
 cookies.txt
 .env
 .env
+frontend/playwright-report/
+test-results/
