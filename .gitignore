@@ -1,9 +1,9 @@
 .DS_Store
+node_modules/
 backend/sqlite/*.sqlite
 frontend/test-results/
+frontend/playwright-report/
+test-results/
 jmeter.log
 cookies.txt
 .env
-.env
-frontend/playwright-report/
-test-results/
