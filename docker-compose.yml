@@ -23,6 +23,23 @@ services:
     restart: unless-stopped
 
 
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+
+    container_name: assessment3-migrate
+
+    environment:
+      NODE_ENV: production
+
+    volumes:
+      - backend_sqlite:/app/sqlite
+
+    command: ["sh", "-c", "npx sequelize-cli db:migrate --env production"]
+
+
   frontend:
     build:
       context: ./frontend
