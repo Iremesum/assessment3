@@ -1,4 +1,4 @@
-import { RequestLog } from '@/app/lib/sequelize';
+import { RequestLog } from "@/app/lib/sequelize";
 
 type LogRequestParams = {
   feedId?: number | null;
@@ -10,7 +10,7 @@ type LogRequestParams = {
 
 export async function logRequest({
   feedId = null,
-  clientId = null,
+  clientId = "anonymous",
   endpoint,
   statusCode,
   responseTimeMs,
@@ -18,12 +18,12 @@ export async function logRequest({
   try {
     await RequestLog.create({
       feedId,
-      clientId,
+      clientId: clientId || "anonymous",
       endpoint,
       statusCode,
       responseTimeMs,
     });
   } catch (error) {
-    console.error('Failed to write request log:', error);
+    console.error("Failed to write request log:", error);
   }
 }
