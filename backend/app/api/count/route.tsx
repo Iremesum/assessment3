@@ -51,7 +51,7 @@ export async function GET() {
       });
 
       const averageResponseTimeMs = Number(
-        averageResponse?.averageResponseTimeMs ?? 0
+        averageResponse?.get("averageResponseTimeMs") ?? 0
       );
 
       span.setAttribute('metrics.total_requests', totalRequests);
